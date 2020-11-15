@@ -11,7 +11,6 @@ exit:
 ; Принимает указатель на нуль-терминированную строку, возвращает её длину
 string_length: ; str_len(rdi)
     xor rax, rax
-
     .loop:
         cmp byte[rdi+rax], 0
         je .end
@@ -22,7 +21,6 @@ string_length: ; str_len(rdi)
 
 ; Принимает указатель на нуль-терминированную строку, выводит её в stdout
 print_string:
-    
     call string_length
     mov rdx, rax
     mov rsi, rdi
@@ -32,6 +30,9 @@ print_string:
     xor rax, rax
     ret
 
+; Переводит строку (выводит символ с кодом 0xA)
+print_newline:
+    mov rdi, 0xA
 ; Принимает код символа и выводит его в stdout
 print_char: ;print_char(rdi)
     mov rax, 1
@@ -44,20 +45,13 @@ print_char: ;print_char(rdi)
     xor rax, rax
     ret
 
-; Переводит строку (выводит символ с кодом 0xA)
-print_newline:
-    mov rdi, 0xA
-    call print_char
-    xor rax, rax
-    ret
-
 ; Выводит беззнаковое 8-байтовое число в десятичном формате 
 ; Совет: выделите место в стеке и храните там результаты деления
 ; Не забудьте перевести цифры в их ASCII коды.
 print_uint: ;print(rdi)
     mov rax, rdi
     mov rsi, 10
-    mov r8, 0
+    xor r8, r8
     .loop:
         xor rdx, rdx
         div rsi
@@ -79,7 +73,6 @@ print_uint: ;print(rdi)
 
 ; Выводит знаковое 8-байтовое число в десятичном формате 
 print_int: ;print_int(rdi)
-
     mov r8, rdi
     cmp r8, 0
     jge .abs
@@ -96,7 +89,6 @@ print_int: ;print_int(rdi)
 
 ; Принимает два указателя на нуль-терминированные строки, возвращает 1 если они равны, 0 иначе
 string_equals: ;rdi, rsi
-
     xor rcx, rcx
     xor rdx, rdx
 
@@ -104,20 +96,16 @@ string_equals: ;rdi, rsi
     mov cl, [rsi]
     mov dl, [rdi]
 
-    cmp cl, 0
-    je .end_test
-
     cmp cl, dl
     jne .BAD
+    cmp cl, 0
+    je .end_test
 
     inc rsi
     inc rdi
     jmp .loop
 
 .end_test:
-    cmp dl, 0
-    jne .BAD 
-
     mov rax, 1
     ret
 .BAD:
@@ -125,9 +113,7 @@ string_equals: ;rdi, rsi
     ret
 
 ; Читает один символ из stdin и возвращает его. Возвращает 0 если достигнут конец потока
-
 read_char:
-    
     xor rax, rax
     push rax
     xor rdi, rdi
@@ -149,7 +135,6 @@ read_char:
 ; При успехе возвращает адрес буфера в rax, длину слова в rdx.
 ; При неудаче возвращает 0 в rax
 ; Эта функция должна дописывать к слову нуль-терминатор
-
 read_word: ;rdi, rsi
     push r12 ;will use as counter
     push r13 ;will use as link to buffer
@@ -232,10 +217,7 @@ parse_uint: ;rdi
   cmp cl, '9'
   ja .OK
 
-;; b -> b
   inc r8
-  ;; rax *= 10
-  ;; rax += cl - '0'
   mov r10, 10
   mul r10  ;; result = rdx:rax
   sub cl, '0'
@@ -290,7 +272,6 @@ parse_int:; rdi
 ; Копирует строку в буфер
 ; Возвращает длину строки если она умещается в буфер, иначе 0
 string_copy:     ;rdi, rsi, rdx
-
     call string_length ;rax => str_len
     cmp rax, rdx
     jae .finale    
